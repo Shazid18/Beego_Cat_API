@@ -28,3 +28,13 @@ h1 {
 .cat-image:hover {
     transform: scale(1.1);
 }
+
+.nav-bar { 
+    margin-bottom: 20px; 
+}
+.nav-button { 
+    padding: 10px 15px; margin: 0 5px; cursor: pointer; text-decoration: none; background-color: #007BFF; color: white; border: none; border-radius: 5px; 
+}
+.nav-button:hover {
+     background-color: #0056b3; 
+}

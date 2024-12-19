@@ -12,9 +12,18 @@
         h1 { margin-bottom: 20px; }
         a { text-decoration: none; color: #007BFF; }
         a:hover { text-decoration: underline; }
+        .nav-bar { margin-bottom: 20px; }
+        .nav-button { padding: 10px 15px; margin: 0 5px; cursor: pointer; text-decoration: none; background-color: #007BFF; color: white; border: none; border-radius: 5px; }
+        .nav-button:hover { background-color: #0056b3; }
     </style>
 </head>
 <body>
+    <div class="nav-bar">
+        <button class="nav-button" onclick="window.location.href='/cats/random'">Voting</button>
+        <button class="nav-button" onclick="window.location.href='/cats/breeds'">Breeds</button>
+        <button class="nav-button" onclick="window.location.href='/cats/favorites'">Favs</button>
+    </div>
+
     <h1>Your Favorite Cat Images</h1>
     <div>
         <a href="/cats/random">Get a Random Cat Image</a>
