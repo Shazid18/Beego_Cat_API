@@ -9,7 +9,7 @@
 <body>
     <div class="nav-bar">
         <button class="nav-button" onclick="window.location.href='/cats/random'">Voting</button>
-        <button class="nav-button" onclick="window.location.href='/cats/breeds'">Breeds</button>
+        <button class="nav-button" onclick="window.location.href='/cats/breedinfo'">Breeds</button>
         <button class="nav-button" onclick="window.location.href='/cats/favorites'">Favs</button>
     </div>
     <h1>Cat Image Gallery</h1>

@@ -14,7 +14,7 @@
             display: flex; 
             flex-direction: column; 
             align-items: center; 
-            justify-content: center; 
+            justify-content: center; /
             min-height: 100vh; 
         }
 
@@ -119,6 +119,7 @@
 
         .breed-id {
             color: gray;
+            font-style: italic;
         }
 
         .description, .wikipedia {
@@ -133,6 +134,7 @@
         .description p, .wikipedia p {
             font-size: 16px;
             line-height: 1.5;
+            color: rgb(128, 128, 128)
         }
 
         /* Change Wikipedia text to be a clickable orange text */
@@ -144,6 +146,24 @@
 
         .wikipedia a:hover {
             text-decoration: none; /* Optional: Adds underline on hover */
+        }
+
+        /* Full width form with dropdown */
+        form {
+            width: 100%; /* Ensures full width */
+            max-width: 600px; /* Limit width to match other sections */
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: 20px;
+        }
+
+        select {
+            width: 100%; /* Make the dropdown take full width */
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            background-color: white;
         }
     </style>
 </head>
@@ -157,7 +177,7 @@
         </button>
         
         <!-- Breeds Button with magnifying glass -->
-        <button class="nav-button" onclick="window.location.href='/cats/breeds'">
+        <button class="nav-button" onclick="window.location.href='/cats/breedinfo'">
             <i class="fas fa-search"></i>
             Breeds
         </button>
@@ -169,6 +189,15 @@
         </button>
     </div>
 
+    <!-- Breed selection dropdown -->
+    <form method="get" action="/cats/breedinfo">
+        <select name="breed" onchange="this.form.submit()">
+            {{range .Breeds}}
+                <option value="{{.}}" {{if eq . $.SelectedBreed}}selected{{end}}>{{.}}</option>
+            {{end}}
+        </select>
+    </form>
+    
     <!-- Slideshow for cat images -->
     <div class="slideshow">
         {{range .BreedInfo.ImageURLs}}
@@ -192,7 +221,7 @@
 
     <!-- Description Section, Left Aligned -->
     <div class="description">
-        <p><strong>Description:</strong> {{.BreedInfo.Info}}</p>
+        <p><strong></strong> {{.BreedInfo.Info}}</p>
     </div>
 
     <!-- Wikipedia Section with "WIKIPEDIA" text as a link -->
@@ -235,5 +264,6 @@
         // Show the first image on page load
         showImage(currentIndex);
     </script>
+
 </body>
 </html>

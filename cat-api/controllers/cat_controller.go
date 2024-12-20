@@ -108,139 +108,99 @@ type BreedInfo struct {
 	ImageURLs   []string `json:"image_urls"`
 }
 
-// GetBreeds fetches the list of available cat breeds.
-func (c *CatController) GetBreeds() {
-	apiKey := web.AppConfig.DefaultString("catapi.key", "")
-	apiURL := "https://api.thecatapi.com/v1/breeds"
+// GetBreedsAndBreedInfo fetches the list of available breeds and default breed information.
+func (c *CatController) GetBreedsAndBreedInfo() {
+    apiKey := web.AppConfig.DefaultString("catapi.key", "")
+    apiURL := "https://api.thecatapi.com/v1/breeds"
 
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", apiURL, nil)
-	if err != nil {
-		c.Data["error"] = "Failed to create request"
-		c.TplName = "cat_breeds.tpl"
-		c.Render()
-		return
-	}
-	req.Header.Set("x-api-key", apiKey)
+    client := &http.Client{}
+    req, err := http.NewRequest("GET", apiURL, nil)
+    if err != nil {
+        c.Data["error"] = "Failed to create request"
+        c.TplName = "cat_breeds.tpl"
+        c.Render()
+        return
+    }
+    req.Header.Set("x-api-key", apiKey)
 
-	resp, err := client.Do(req)
-	if err != nil {
-		c.Data["error"] = "Failed to fetch breeds"
-		c.TplName = "cat_breeds.tpl"
-		c.Render()
-		return
-	}
-	defer resp.Body.Close()
+    resp, err := client.Do(req)
+    if err != nil {
+        c.Data["error"] = "Failed to fetch breeds"
+        c.TplName = "cat_breeds.tpl"
+        c.Render()
+        return
+    }
+    defer resp.Body.Close()
 
-	var breeds []map[string]interface{}
-	if err := json.NewDecoder(resp.Body).Decode(&breeds); err != nil {
-		c.Data["error"] = "Failed to parse response"
-		c.TplName = "cat_breeds.tpl"
-		c.Render()
-		return
-	}
+    var breeds []map[string]interface{}
+    if err := json.NewDecoder(resp.Body).Decode(&breeds); err != nil {
+        c.Data["error"] = "Failed to parse response"
+        c.TplName = "cat_breeds.tpl"
+        c.Render()
+        return
+    }
 
-	// Extract breed names for dropdown
-	var breedNames []string
-	for _, breed := range breeds {
-		breedNames = append(breedNames, breed["name"].(string))
-	}
+    // Extract breed names for dropdown
+    var breedNames []string
+    for _, breed := range breeds {
+        breedNames = append(breedNames, breed["name"].(string))
+    }
 
-	c.Data["Breeds"] = breedNames
-	c.TplName = "cat_breeds.tpl"
-	c.Render()
+    // Default to the first breed if it's not specified
+    selectedBreed := c.GetString("breed")
+    if selectedBreed == "" && len(breeds) > 0 {
+        selectedBreed = breeds[0]["name"].(string)
+    }
+
+    // Fetch breed info for the selected breed
+    var breedInfo BreedInfo
+    for _, breed := range breeds {
+        if breed["name"].(string) == selectedBreed {
+            breedInfo.ID = breed["id"].(string)
+            breedInfo.Origin = breed["origin"].(string)
+            breedInfo.Name = breed["name"].(string)
+            breedInfo.Info = breed["description"].(string)
+            breedInfo.Wikipedia = breed["wikipedia_url"].(string)
+        }
+    }
+
+    // Fetch breed-specific images
+    apiURL = fmt.Sprintf("https://api.thecatapi.com/v1/images/search?breed_ids=%s&limit=5&api_key=%s", breedInfo.ID, apiKey)
+    req, err = http.NewRequest("GET", apiURL, nil)
+    if err != nil {
+        c.Data["error"] = "Failed to create request for breed images"
+        c.TplName = "cat_breeds.tpl"
+        c.Render()
+        return
+    }
+    req.Header.Set("x-api-key", apiKey)
+
+    resp, err = client.Do(req)
+    if err != nil {
+        c.Data["error"] = "Failed to fetch breed images"
+        c.TplName = "cat_breeds.tpl"
+        c.Render()
+        return
+    }
+    defer resp.Body.Close()
+
+    var images []map[string]interface{}
+    if err := json.NewDecoder(resp.Body).Decode(&images); err != nil {
+        c.Data["error"] = "Failed to parse breed images"
+        c.TplName = "cat_breeds.tpl"
+        c.Render()
+        return
+    }
+
+    // Extract image URLs
+    for _, img := range images {
+        breedInfo.ImageURLs = append(breedInfo.ImageURLs, img["url"].(string))
+    }
+
+    // Pass the breed info, breed names, and selected breed to the template
+    c.Data["BreedInfo"] = breedInfo
+    c.Data["Breeds"] = breedNames
+    c.Data["SelectedBreed"] = selectedBreed
+    c.TplName = "cat_breed_info.tpl"
+    c.Render()
 }
-
-// GetBreedInfo fetches information and images for a selected breed.
-func (c *CatController) GetBreedInfo() {
-	breedName := c.GetString("breed")
-	if breedName == "" {
-		c.Data["error"] = "Breed not selected"
-		c.TplName = "cat_breeds.tpl"
-		c.Render()
-		return
-	}
-
-	// Fetch breed info
-	var breedInfo BreedInfo
-	apiKey := web.AppConfig.DefaultString("catapi.key", "")
-	apiURL := "https://api.thecatapi.com/v1/breeds"
-
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", apiURL, nil)
-	if err != nil {
-		c.Data["error"] = "Failed to create request"
-		c.TplName = "cat_breeds.tpl"
-		c.Render()
-		return
-	}
-	req.Header.Set("x-api-key", apiKey)
-
-	resp, err := client.Do(req)
-	if err != nil {
-		c.Data["error"] = "Failed to fetch breed info"
-		c.TplName = "cat_breeds.tpl"
-		c.Render()
-		return
-	}
-	defer resp.Body.Close()
-
-	var breeds []map[string]interface{}
-	if err := json.NewDecoder(resp.Body).Decode(&breeds); err != nil {
-		c.Data["error"] = "Failed to parse breed info"
-		c.TplName = "cat_breeds.tpl"
-		c.Render()
-		return
-	}
-
-	// Find the breed by name and set the breed info
-	for _, breed := range breeds {
-		if breed["name"].(string) == breedName {
-			breedInfo.ID = breed["id"].(string)
-			breedInfo.Origin = breed["origin"].(string)
-			breedInfo.Name = breed["name"].(string)
-			breedInfo.Info = breed["description"].(string)
-			breedInfo.Wikipedia = breed["wikipedia_url"].(string)
-		}
-	}
-
-	// Now that breedInfo.ID is set, fetch the breed-specific images
-	apiURL = fmt.Sprintf("https://api.thecatapi.com/v1/images/search?breed_ids=%s&limit=5&api_key=%s", breedInfo.ID, apiKey)
-
-	req, err = http.NewRequest("GET", apiURL, nil)
-	if err != nil {
-		c.Data["error"] = "Failed to create request for breed images"
-		c.TplName = "cat_breeds.tpl"
-		c.Render()
-		return
-	}
-	req.Header.Set("x-api-key", apiKey)
-
-	resp, err = client.Do(req)
-	if err != nil {
-		c.Data["error"] = "Failed to fetch breed images"
-		c.TplName = "cat_breeds.tpl"
-		c.Render()
-		return
-	}
-	defer resp.Body.Close()
-
-	var images []map[string]interface{}
-	if err := json.NewDecoder(resp.Body).Decode(&images); err != nil {
-		c.Data["error"] = "Failed to parse breed images"
-		c.TplName = "cat_breeds.tpl"
-		c.Render()
-		return
-	}
-
-	// Extract image URLs
-	for _, img := range images {
-		breedInfo.ImageURLs = append(breedInfo.ImageURLs, img["url"].(string))
-	}
-
-	// Pass the breed info and images to the template
-	c.Data["BreedInfo"] = breedInfo
-	c.TplName = "cat_breed_info.tpl"
-	c.Render()
-}
-
