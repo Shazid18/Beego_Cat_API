@@ -4,12 +4,57 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{.BreedInfo.Name}} - Cat Breed Info</title>
+    <!-- Include Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
-        .button { padding: 10px 20px; margin: 5px; cursor: pointer; }
-        .nav-button { padding: 10px 15px; margin: 0 5px; cursor: pointer; text-decoration: none; background-color: #007BFF; color: white; border: none; border-radius: 5px; }
-        .nav-button:hover { background-color: #0056b3; }
-        
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh; 
+        }
+
+        /* Left-aligned nav-bar with max-width and margins */
+        .nav-bar {
+            display: flex;
+            justify-content: flex-start; /* Align buttons to the left */
+            gap: 10px; /* Adds space between buttons */
+            width: 100%; 
+            max-width: 600px; /* Limit width to match info-section */
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: 20px; /* Add bottom margin */
+        }
+
+        .nav-button {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color:rgb(252, 253, 253);
+            color: gray;
+            border: none;
+            border-radius: 5px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold; /* Added font-weight for bold text */
+        }
+
+        .nav-button:hover {
+            color:rgb(212, 97, 20);
+        }
+
+        /* Styling for the icons */
+        .nav-button i {
+            font-size: 24px; /* Icon size */
+            margin-bottom: 5px; /* Space between icon and text */
+        }
+
         /* Center the slideshow */
         .slideshow { 
             display: flex; 
@@ -92,30 +137,46 @@
 
         /* Change Wikipedia text to be a clickable orange text */
         .wikipedia a {
-            color: orange; /* Set the text color to orange */
+            color: rgb(212, 97, 20); /* Set the text color to orange */
             text-decoration: none; /* Remove underline */
             font-weight: bold; /* Make the link bold */
         }
 
         .wikipedia a:hover {
-            text-decoration: underline; /* Optional: Adds underline on hover */
+            text-decoration: none; /* Optional: Adds underline on hover */
         }
     </style>
 </head>
 <body>
+    <!-- Left-aligned navigation bar with same width as info-section -->
     <div class="nav-bar">
-        <button class="nav-button" onclick="window.location.href='/cats/random'">Voting</button>
-        <button class="nav-button" onclick="window.location.href='/cats/breeds'">Breeds</button>
-        <button class="nav-button" onclick="window.location.href='/cats/favorites'">Favs</button>
+        <!-- Voting Button with up and down arrows -->
+        <button class="nav-button" onclick="window.location.href='/cats/random'">
+            <i class="fa-solid fa-arrows-up-down"></i>
+            Voting
+        </button>
+        
+        <!-- Breeds Button with magnifying glass -->
+        <button class="nav-button" onclick="window.location.href='/cats/breeds'">
+            <i class="fas fa-search"></i>
+            Breeds
+        </button>
+
+        <!-- Favs Button with heart icon -->
+        <button class="nav-button" onclick="window.location.href='/cats/favorites'">
+            <i class="far fa-heart"></i>
+            Favs
+        </button>
     </div>
 
-
+    <!-- Slideshow for cat images -->
     <div class="slideshow">
         {{range .BreedInfo.ImageURLs}}
             <img src="{{.}}" alt="Cat Image">
         {{end}}
     </div>
 
+    <!-- Dots for slideshow navigation -->
     <div class="dots">
         {{range .BreedInfo.ImageURLs}}
             <span class="dot"></span>
