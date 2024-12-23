@@ -4,22 +4,74 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Favorite Cats</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
-        .favorites-grid {
+        body { 
+            font-family: Arial, sans-serif; 
+            text-align: center; 
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .view-controls {
+            margin: 20px 0;
+        }
+        .view-btn {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .view-btn.active {
+            background-color: #0056b3;
+        }
+        .favorites-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        /* Grid View Styles */
+        .grid-view {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 20px;
             padding: 20px;
         }
+        /* List View Styles */
+        .list-view {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding: 20px;
+        }
+        .list-view .favorite-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+        }
+        .list-view .favorite-item img {
+            width: 200px;
+            height: 200px;
+            object-fit: cover;
+            margin-right: 20px;
+        }
         .favorite-item {
-            border: 1px solid #ddd;
+            background: white;
             border-radius: 8px;
-            padding: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .favorite-item:hover {
+            transform: translateY(-5px);
         }
         .favorite-item img {
-            max-width: 100%;
-            height: auto;
+            width: 300px;
+            height: 300px;
+            object-fit: cover;
             border-radius: 4px;
         }
         .delete-btn {
@@ -30,6 +82,10 @@
             border-radius: 4px;
             cursor: pointer;
             margin-top: 10px;
+            transition: background-color 0.2s;
+        }
+        .delete-btn:hover {
+            background-color: #c82333;
         }
         .message {
             padding: 10px;
@@ -39,6 +95,26 @@
         }
         .success { background-color: #d4edda; color: #155724; }
         .error { background-color: #f8d7da; color: #721c24; }
+        .nav-bar {
+            background-color: #fff;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .nav-button {
+            padding: 10px 15px;
+            margin: 0 5px;
+            cursor: pointer;
+            text-decoration: none;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.2s;
+        }
+        .nav-button:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
@@ -48,17 +124,26 @@
         <button class="nav-button" onclick="window.location.href='/cats/favorites'">Favs</button>
     </div>
 
-    <h1>My Favorite Cats</h1>
+    <div class="view-controls">
+        <button class="view-btn active" onclick="toggleView('grid')">
+            <i class="fas fa-th"></i>
+        </button>
+        <button class="view-btn" onclick="toggleView('list')">
+            <i class="fas fa-list"></i>
+        </button>
+    </div>
     <div id="message" class="message"></div>
 
     {{if .error}}
         <p style="color: red;">{{.error}}</p>
     {{else}}
-        <div class="favorites-grid">
+        <div id="favorites-container" class="favorites-container grid-view">
             {{range .Favorites}}
                 <div class="favorite-item" id="favorite-{{.ID}}">
                     <img src="{{.Image.URL}}" alt="Favorite Cat">
-                    <button class="delete-btn" onclick="deleteFavorite({{.ID}})">Remove from Favorites</button>
+                    <button class="delete-btn" onclick="deleteFavorite({{.ID}})">
+                        <i class="fas fa-trash"></i>
+                    </button>
                 </div>
             {{end}}
         </div>
@@ -73,6 +158,18 @@
             setTimeout(() => {
                 messageDiv.style.display = 'none';
             }, 3000);
+        }
+
+        function toggleView(viewType) {
+            const container = document.getElementById('favorites-container');
+            const buttons = document.querySelectorAll('.view-btn');
+            
+            // Update buttons
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            
+            // Update view
+            container.className = `favorites-container ${viewType}-view`;
         }
 
         async function deleteFavorite(favoriteId) {
