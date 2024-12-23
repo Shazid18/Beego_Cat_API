@@ -27,8 +27,8 @@
     {{else if .CatImage}}
         <img src="{{.CatImage.URL}}" alt="Random Cat" id="catImage">
         <div>
-            <button class="button" onclick="reloadImage()">Like</button>
-            <button class="button" onclick="reloadImage()">Dislike</button>
+            <button class="button" onclick="voteOnImage(1)">Like</button>
+            <button class="button" onclick="voteOnImage(-1)">Dislike</button>
             <button class="button" onclick="addToFavorites()">Favorite</button>
         </div>
         <script>
@@ -37,26 +37,32 @@
                 url: "{{.CatImage.URL}}"
             };
 
-            function reloadImage() {
-                window.location.reload();
+            function voteOnImage(value) {
+                const payload = {
+                    image_id: catImage.id,  // The correct image ID from the template
+                    value: value,
+                    sub_id: "demo-0.120221667167041654"  // Hardcoded sub_id for the user
+                };
+
+                fetch('/cats/vote', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message || data.error);  // Show success or error message
+                    reloadImage(); // Refresh after voting
+                })
+                .catch(error => {
+                    alert('Error voting: ' + error);
+                });
             }
 
-            function addToFavorites() {
-                fetch('/cats/favorites', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(catImage)
-                })
-                .then(response => response.json()) // This will now correctly parse the JSON response
-                .then(data => {
-                    if (data.message) {
-                        alert(data.message); // Show success message
-                    } else if (data.error) {
-                        alert('Error: ' + data.error); // Show error message
-                    }
-                    reloadImage(); // Reload the page after adding to favorites
-                })
-                .catch(error => alert('Error adding to favorites: ' + error.message));
+            function reloadImage() {
+                window.location.reload();
             }
         </script>
     {{else}}
