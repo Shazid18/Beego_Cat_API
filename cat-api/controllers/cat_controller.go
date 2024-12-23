@@ -1,4 +1,3 @@
-
 package controllers
 
 import (
@@ -38,49 +37,85 @@ type Favorite struct {
     Image     CatImage `json:"image"`
 }
 
+type BreedInfo struct {
+	ID		  	string `json:"id"`
+	Origin	  	string `json:"origin"`
+	Name        string `json:"name"`
+	Info        string `json:"description"`
+	Wikipedia   string `json:"wikipedia_url"`
+	ImageURLs   []string `json:"image_urls"`
+}
+
+// Helper function to make HTTP requests concurrently
+func makeRequest(method, url string, headers map[string]string, body []byte) (responseBody []byte, err error) {
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, bytes.NewBuffer(body))
+	if err != nil {
+		return nil, err
+	}
+
+	// Set headers
+	for key, value := range headers {
+		req.Header.Set(key, value)
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	responseBody, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return responseBody, nil
+}
+
 // GetRandomCatImage fetches a random cat image from The Cat API and renders it on the page.
 func (c *CatController) GetRandomCatImage() {
 	apiKey := web.AppConfig.DefaultString("catapi.key", "")
 	apiURL := "https://api.thecatapi.com/v1/images/search"
 
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", apiURL, nil)
-	if err != nil {
-		c.Data["error"] = "Failed to create request"
-		c.TplName = "cat_image.tpl"
-		c.Render()
-		return
-	}
-	req.Header.Set("x-api-key", apiKey)
+	ch := make(chan CatImage, 1) // Channel for image result
+	errCh := make(chan error, 1)  // Channel for errors
 
-	resp, err := client.Do(req)
-	if err != nil {
-		c.Data["error"] = "Failed to fetch image"
-		c.TplName = "cat_image.tpl"
-		c.Render()
-		return
-	}
-	defer resp.Body.Close()
+	go func() {
+		// Prepare headers and make the request asynchronously
+		headers := map[string]string{"x-api-key": apiKey}
+		respBody, err := makeRequest("GET", apiURL, headers, nil)
+		if err != nil {
+			errCh <- err
+			return
+		}
 
-	var images []CatImage
-	if err := json.NewDecoder(resp.Body).Decode(&images); err != nil {
-		c.Data["error"] = "Failed to parse response"
-		c.TplName = "cat_image.tpl"
-		c.Render()
-		return
+		// Parse the response
+		var images []CatImage
+		if err := json.Unmarshal(respBody, &images); err != nil {
+			errCh <- err
+			return
+		}
+
+		if len(images) > 0 {
+			ch <- images[0] // Send the first image to the channel
+		} else {
+			errCh <- fmt.Errorf("No image found")
+		}
+	}()
+
+	select {
+	case catImage := <-ch: // Successfully received cat image
+		c.Data["CatImage"] = catImage
+	case err := <-errCh: // Error occurred
+		c.Data["error"] = fmt.Sprintf("Failed to fetch image: %v", err)
 	}
 
-	if len(images) > 0 {
-		c.Data["CatImage"] = images[0]
-	} else {
-		c.Data["error"] = "No image found"
-	}
 	c.TplName = "cat_image.tpl"
 	c.Render()
 }
 
-
-// New method to handle voting
+// New method to handle voting with Go channels
 func (c *CatController) VoteForImage() {
     apiKey := web.AppConfig.DefaultString("catapi.key", "")
     
@@ -99,60 +134,41 @@ func (c *CatController) VoteForImage() {
         return
     }
 
-    // For debugging
-    fmt.Printf("Received vote request: %+v\n", voteReq)
+    ch := make(chan map[string]interface{}, 1) // Channel for API response
+    errCh := make(chan error, 1) // Channel for errors
 
-    voteURL := "https://api.thecatapi.com/v1/votes"
-    jsonData, err := json.Marshal(voteReq)
-    if err != nil {
-        c.Data["json"] = map[string]interface{}{"error": "Failed to process vote"}
-        c.ServeJSON()
-        return
+    go func() {
+        // Prepare headers and make the request asynchronously
+        voteURL := "https://api.thecatapi.com/v1/votes"
+        jsonData, _ := json.Marshal(voteReq)
+        headers := map[string]string{"x-api-key": apiKey, "Content-Type": "application/json"}
+        respBody, err := makeRequest("POST", voteURL, headers, jsonData)
+        if err != nil {
+            errCh <- err
+            return
+        }
+
+        // Parse the response
+        var result map[string]interface{}
+        if err := json.Unmarshal(respBody, &result); err != nil {
+            errCh <- err
+            return
+        }
+
+        ch <- result
+    }()
+
+    select {
+    case result := <-ch: // Successfully received the result
+        c.Data["json"] = result
+    case err := <-errCh: // Error occurred
+        c.Data["json"] = map[string]interface{}{"error": fmt.Sprintf("Failed to submit vote: %v", err)}
     }
 
-    client := &http.Client{}
-    req, err := http.NewRequest("POST", voteURL, bytes.NewBuffer(jsonData))
-    if err != nil {
-        c.Data["json"] = map[string]interface{}{"error": "Failed to create vote request"}
-        c.ServeJSON()
-        return
-    }
-
-    req.Header.Set("x-api-key", apiKey)
-    req.Header.Set("Content-Type", "application/json")
-
-    resp, err := client.Do(req)
-    if err != nil {
-        c.Data["json"] = map[string]interface{}{"error": "Failed to submit vote"}
-        c.ServeJSON()
-        return
-    }
-    defer resp.Body.Close()
-
-    // Read and parse the response
-    respBody, err := ioutil.ReadAll(resp.Body)
-    if err != nil {
-        c.Data["json"] = map[string]interface{}{"error": "Failed to read response"}
-        c.ServeJSON()
-        return
-    }
-
-    // For debugging
-    fmt.Printf("API Response: %s\n", string(respBody))
-
-    var result map[string]interface{}
-    if err := json.Unmarshal(respBody, &result); err != nil {
-        c.Data["json"] = map[string]interface{}{"error": "Failed to parse response"}
-        c.ServeJSON()
-        return
-    }
-
-    c.Data["json"] = result
     c.ServeJSON()
 }
 
-
-// AddToFavorites handles adding an image to favorites
+// AddToFavorites with Go channels
 func (c *CatController) AddToFavorites() {
     apiKey := web.AppConfig.DefaultString("catapi.key", "")
     
@@ -170,113 +186,122 @@ func (c *CatController) AddToFavorites() {
         return
     }
 
-    favURL := "https://api.thecatapi.com/v1/favourites"
-    jsonData, err := json.Marshal(favReq)
-    if err != nil {
-        c.Data["json"] = map[string]interface{}{"error": "Failed to process request"}
-        c.ServeJSON()
-        return
+    ch := make(chan map[string]interface{}, 1) // Channel for API response
+    errCh := make(chan error, 1) // Channel for errors
+
+    go func() {
+        // Prepare headers and make the request asynchronously
+        favURL := "https://api.thecatapi.com/v1/favourites"
+        jsonData, _ := json.Marshal(favReq)
+        headers := map[string]string{"x-api-key": apiKey, "Content-Type": "application/json"}
+        respBody, err := makeRequest("POST", favURL, headers, jsonData)
+        if err != nil {
+            errCh <- err
+            return
+        }
+
+        // Parse the response
+        var result map[string]interface{}
+        if err := json.Unmarshal(respBody, &result); err != nil {
+            errCh <- err
+            return
+        }
+
+        ch <- result
+    }()
+
+    select {
+    case result := <-ch: // Successfully received the result
+        c.Data["json"] = result
+    case err := <-errCh: // Error occurred
+        c.Data["json"] = map[string]interface{}{"error": fmt.Sprintf("Failed to add to favorites: %v", err)}
     }
 
-    client := &http.Client{}
-    req, err := http.NewRequest("POST", favURL, bytes.NewBuffer(jsonData))
-    if err != nil {
-        c.Data["json"] = map[string]interface{}{"error": "Failed to create request"}
-        c.ServeJSON()
-        return
-    }
-
-    req.Header.Set("x-api-key", apiKey)
-    req.Header.Set("Content-Type", "application/json")
-
-    resp, err := client.Do(req)
-    if err != nil {
-        c.Data["json"] = map[string]interface{}{"error": "Failed to add favorite"}
-        c.ServeJSON()
-        return
-    }
-    defer resp.Body.Close()
-
-    var result map[string]interface{}
-    json.NewDecoder(resp.Body).Decode(&result)
-    c.Data["json"] = result
     c.ServeJSON()
 }
 
-// GetFavorites retrieves all favorited images
+// GetFavorites with Go channels
 func (c *CatController) GetFavorites() {
     apiKey := web.AppConfig.DefaultString("catapi.key", "")
     
-    client := &http.Client{}
-    req, err := http.NewRequest("GET", "https://api.thecatapi.com/v1/favourites", nil)
-    if err != nil {
-        c.Data["error"] = "Failed to create request"
-        c.TplName = "favorites.tpl"
-        return
+    ch := make(chan []Favorite, 1) // Channel for result
+    errCh := make(chan error, 1)   // Channel for errors
+
+    go func() {
+        // Prepare headers and make the request asynchronously
+        reqURL := "https://api.thecatapi.com/v1/favourites"
+        headers := map[string]string{"x-api-key": apiKey}
+        respBody, err := makeRequest("GET", reqURL, headers, nil)
+        if err != nil {
+            errCh <- err
+            return
+        }
+
+        // Parse the response
+        var favorites []Favorite
+        if err := json.Unmarshal(respBody, &favorites); err != nil {
+            errCh <- err
+            return
+        }
+
+        ch <- favorites
+    }()
+
+    select {
+    case favorites := <-ch: // Successfully received favorites
+        c.Data["Favorites"] = favorites
+    case err := <-errCh: // Error occurred
+        c.Data["error"] = fmt.Sprintf("Failed to fetch favorites: %v", err)
     }
 
-    req.Header.Set("x-api-key", apiKey)
-    
-    resp, err := client.Do(req)
-    if err != nil {
-        c.Data["error"] = "Failed to fetch favorites"
-        c.TplName = "favorites.tpl"
-        return
-    }
-    defer resp.Body.Close()
-
-    var favorites []Favorite
-    if err := json.NewDecoder(resp.Body).Decode(&favorites); err != nil {
-        c.Data["error"] = "Failed to parse favorites"
-        c.TplName = "favorites.tpl"
-        return
-    }
-
-    c.Data["Favorites"] = favorites
     c.TplName = "favorites.tpl"
+    c.Render()
 }
 
-// DeleteFavorite removes a favorite image
+// DeleteFavorite with Go channels
 func (c *CatController) DeleteFavorite() {
     apiKey := web.AppConfig.DefaultString("catapi.key", "")
     favoriteID := c.Ctx.Input.Param(":id")
     
-    client := &http.Client{}
-    req, err := http.NewRequest("DELETE", fmt.Sprintf("https://api.thecatapi.com/v1/favourites/%s", favoriteID), nil)
-    if err != nil {
-        c.Data["json"] = map[string]interface{}{"error": "Failed to create request"}
-        c.ServeJSON()
-        return
+    ch := make(chan map[string]interface{}, 1) // Channel for API response
+    errCh := make(chan error, 1) // Channel for errors
+
+    go func() {
+        // Prepare headers and make the request asynchronously
+        reqURL := fmt.Sprintf("https://api.thecatapi.com/v1/favourites/%s", favoriteID)
+        headers := map[string]string{"x-api-key": apiKey}
+        respBody, err := makeRequest("DELETE", reqURL, headers, nil)
+        if err != nil {
+            errCh <- err
+            return
+        }
+
+        // Parse the response
+        var result map[string]interface{}
+        if err := json.Unmarshal(respBody, &result); err != nil {
+            errCh <- err
+            return
+        }
+
+        ch <- result
+    }()
+
+    select {
+    case result := <-ch: // Successfully deleted favorite
+        c.Data["json"] = map[string]interface{}{"message": "Favorite deleted successfully", "result": result}
+    case err := <-errCh: // Error occurred
+        c.Data["json"] = map[string]interface{}{"error": fmt.Sprintf("Failed to delete favorite: %v", err)}
     }
 
-    req.Header.Set("x-api-key", apiKey)
-    
-    resp, err := client.Do(req)
-    if err != nil {
-        c.Data["json"] = map[string]interface{}{"error": "Failed to delete favorite"}
-        c.ServeJSON()
-        return
-    }
-    defer resp.Body.Close()
-
-    c.Data["json"] = map[string]interface{}{"message": "Favorite deleted successfully"}
     c.ServeJSON()
 }
 
 
+
+
 // BreedsController handles requests related to cat breeds.
 
-
-type BreedInfo struct {
-	ID		  	string `json:"id"`
-	Origin	  	string `json:"origin"`
-	Name        string `json:"name"`
-	Info        string `json:"description"`
-	Wikipedia   string `json:"wikipedia_url"`
-	ImageURLs   []string `json:"image_urls"`
-}
-
-// GetBreedsAndBreedInfo fetches the list of available breeds and default breed information.
+// GetBreedsAndBreedInfo fetches the list of available breeds and breed information concurrently.
 func (c *CatController) GetBreedsAndBreedInfo() {
 	apiKey := web.AppConfig.DefaultString("catapi.key", "")
 	apiURL := "https://api.thecatapi.com/v1/breeds"
@@ -291,11 +316,12 @@ func (c *CatController) GetBreedsAndBreedInfo() {
 	}
 	req.Header.Set("x-api-key", apiKey)
 
-	// Channel to receive response data
-	breedsChannel := make(chan []map[string]interface{})
-	errorChannel := make(chan error)
+	// Channels for receiving data from both API requests and handling errors.
+	breedsChannel := make(chan []map[string]interface{}, 1)
+	imagesChannel := make(chan []map[string]interface{}, 1)
+	errorChannel := make(chan error, 2) // A buffer for two potential errors
 
-	// Goroutine for fetching breed data
+	// Goroutine for fetching breeds
 	go func() {
 		resp, err := client.Do(req)
 		if err != nil {
@@ -313,12 +339,13 @@ func (c *CatController) GetBreedsAndBreedInfo() {
 		breedsChannel <- breeds
 	}()
 
+	// Wait for the breeds response or error
 	var breeds []map[string]interface{}
 	select {
 	case breeds = <-breedsChannel:
 		// Successfully fetched breed data
 	case err := <-errorChannel:
-		// Handle error
+		// Error occurred fetching breed data
 		c.Data["error"] = fmt.Sprintf("Failed to fetch breeds: %v", err)
 		c.TplName = "cat_breeds.tpl"
 		c.Render()
@@ -331,13 +358,13 @@ func (c *CatController) GetBreedsAndBreedInfo() {
 		breedNames = append(breedNames, breed["name"].(string))
 	}
 
-	// Default to the first breed if it's not specified
+	// Default to the first breed if not specified
 	selectedBreed := c.GetString("breed")
 	if selectedBreed == "" && len(breeds) > 0 {
 		selectedBreed = breeds[0]["name"].(string)
 	}
 
-	// Find breed info for selected breed
+	// Prepare breed info for the selected breed
 	var breedInfo BreedInfo
 	for _, breed := range breeds {
 		if breed["name"].(string) == selectedBreed {
@@ -349,10 +376,8 @@ func (c *CatController) GetBreedsAndBreedInfo() {
 		}
 	}
 
-	// Channel to receive breed images
-	imagesChannel := make(chan []map[string]interface{})
+	// Goroutine to fetch images for the selected breed
 	go func() {
-		// Fetch breed-specific images
 		apiURL = fmt.Sprintf("https://api.thecatapi.com/v1/images/search?breed_ids=%s&limit=5&api_key=%s", breedInfo.ID, apiKey)
 		req, err := http.NewRequest("GET", apiURL, nil)
 		if err != nil {
@@ -377,24 +402,25 @@ func (c *CatController) GetBreedsAndBreedInfo() {
 		imagesChannel <- images
 	}()
 
+	// Wait for the images response or error
 	var images []map[string]interface{}
 	select {
 	case images = <-imagesChannel:
 		// Successfully fetched breed images
 	case err := <-errorChannel:
-		// Handle error
+		// Error occurred fetching breed images
 		c.Data["error"] = fmt.Sprintf("Failed to fetch breed images: %v", err)
 		c.TplName = "cat_breeds.tpl"
 		c.Render()
 		return
 	}
 
-	// Extract image URLs
+	// Extract image URLs and add to breedInfo
 	for _, img := range images {
 		breedInfo.ImageURLs = append(breedInfo.ImageURLs, img["url"].(string))
 	}
 
-	// Pass the breed info, breed names, and selected breed to the template
+	// Pass the breed data and images to the template
 	c.Data["BreedInfo"] = breedInfo
 	c.Data["Breeds"] = breedNames
 	c.Data["SelectedBreed"] = selectedBreed
