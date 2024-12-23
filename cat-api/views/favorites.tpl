@@ -6,148 +6,175 @@
     <title>Favorite Cats</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            text-align: center; 
-            margin: 20px;
-            background-color: #f5f5f5;
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: white;
         }
-        .view-controls {
-            margin: 20px 0;
-        }
-        .view-btn {
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            margin: 0 5px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .view-btn.active {
-            background-color: #0056b3;
-        }
-        .favorites-container {
+        .page-container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
         }
-        /* Grid View Styles */
+        .nav-bar {
+            display: flex;
+            gap: 30px;
+            padding: 10px 0;
+            margin-bottom: 15px;
+        }
+        .nav-item {
+            text-decoration: none;
+            color: #666;
+            font-size: 14px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .nav-item:hover {
+            color: #FF4081;
+        }
+        .nav-item.active {
+            color: #FF4081;
+        }
+        .view-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .view-btn {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 5px;
+        }
+        .view-btn.active {
+            color: #FF4081;
+        }
+        .favorites-wrapper {
+            background: white;
+            border-radius: 8px;
+            height: calc(100vh - 140px);
+            overflow: hidden;
+        }
+        .favorites-container {
+            height: 100%;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        /* Custom scrollbar */
+        .favorites-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .favorites-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .favorites-container::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        .favorites-container::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
         .grid-view {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-            padding: 20px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            padding-right: 10px;
         }
-        /* List View Styles */
         .list-view {
             display: flex;
             flex-direction: column;
-            gap: 20px;
-            padding: 20px;
-        }
-        .list-view .favorite-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 20px;
-        }
-        .list-view .favorite-item img {
-            width: 200px;
-            height: 200px;
-            object-fit: cover;
-            margin-right: 20px;
+            gap: 10px;
         }
         .favorite-item {
-            background: white;
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
-        }
-        .favorite-item:hover {
-            transform: translateY(-5px);
+            position: relative;
+            width: 100%;
+            padding-bottom: 100%;
         }
         .favorite-item img {
-            width: 300px;
-            height: 300px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             object-fit: cover;
-            border-radius: 4px;
         }
         .delete-btn {
-            background-color: #dc3545;
-            color: white;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
             border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
+            color: white;
             cursor: pointer;
-            margin-top: 10px;
-            transition: background-color 0.2s;
+            z-index: 2;
+            font-size: 18px;
+            padding: 5px;
+            text-shadow: 0 0 3px rgba(0,0,0,0.5);
         }
         .delete-btn:hover {
-            background-color: #c82333;
+            color: #FF4081;
         }
         .message {
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            border-radius: 20px;
             display: none;
         }
         .success { background-color: #d4edda; color: #155724; }
         .error { background-color: #f8d7da; color: #721c24; }
-        .nav-bar {
-            background-color: #fff;
-            padding: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .nav-button {
-            padding: 10px 15px;
-            margin: 0 5px;
-            cursor: pointer;
-            text-decoration: none;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            transition: background-color 0.2s;
-        }
-        .nav-button:hover {
-            background-color: #0056b3;
-        }
     </style>
 </head>
 <body>
-    <div class="nav-bar">
-        <button class="nav-button" onclick="window.location.href='/cats/random'">Voting</button>
-        <button class="nav-button" onclick="window.location.href='/cats/breedinfo'">Breeds</button>
-        <button class="nav-button" onclick="window.location.href='/cats/favorites'">Favs</button>
-    </div>
+    <div class="page-container">
+        <nav class="nav-bar">
+            <a href="/cats/random" class="nav-item">
+                <i class="fas fa-arrow-up-arrow-down"></i>
+                Voting
+            </a>
+            <a href="/cats/breedinfo" class="nav-item">
+                <i class="fas fa-search"></i>
+                Breeds
+            </a>
+            <a href="/cats/favorites" class="nav-item active">
+                <i class="fas fa-heart"></i>
+                Favs
+            </a>
+        </nav>
 
-    <div class="view-controls">
-        <button class="view-btn active" onclick="toggleView('grid')">
-            <i class="fas fa-th"></i>
-        </button>
-        <button class="view-btn" onclick="toggleView('list')">
-            <i class="fas fa-list"></i>
-        </button>
-    </div>
-    <div id="message" class="message"></div>
-
-    {{if .error}}
-        <p style="color: red;">{{.error}}</p>
-    {{else}}
-        <div id="favorites-container" class="favorites-container grid-view">
-            {{range .Favorites}}
-                <div class="favorite-item" id="favorite-{{.ID}}">
-                    <img src="{{.Image.URL}}" alt="Favorite Cat">
-                    <button class="delete-btn" onclick="deleteFavorite({{.ID}})">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            {{end}}
+        <div class="view-controls">
+            <button class="view-btn active" onclick="toggleView('grid')">
+                <i class="fas fa-th"></i>
+            </button>
+            <button class="view-btn" onclick="toggleView('list')">
+                <i class="fas fa-bars"></i>
+            </button>
         </div>
-    {{end}}
+
+        <div id="message" class="message"></div>
+
+        {{if .error}}
+            <p style="color: red;">{{.error}}</p>
+        {{else}}
+            <div class="favorites-wrapper">
+                <div id="favorites-container" class="favorites-container grid-view">
+                    {{range .Favorites}}
+                        <div class="favorite-item" id="favorite-{{.ID}}">
+                            <img src="{{.Image.URL}}" alt="Favorite Cat">
+                            <button class="delete-btn" onclick="deleteFavorite({{.ID}})">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    {{end}}
+                </div>
+            </div>
+        {{end}}
+    </div>
 
     <script>
         function showMessage(text, isError = false) {
@@ -164,11 +191,9 @@
             const container = document.getElementById('favorites-container');
             const buttons = document.querySelectorAll('.view-btn');
             
-            // Update buttons
             buttons.forEach(btn => btn.classList.remove('active'));
             event.currentTarget.classList.add('active');
             
-            // Update view
             container.className = `favorites-container ${viewType}-view`;
         }
 
@@ -184,10 +209,10 @@
                 } else {
                     const element = document.getElementById(`favorite-${favoriteId}`);
                     element.remove();
-                    showMessage('Favorite removed successfully');
+                    showMessage('Removed from favorites');
                 }
             } catch (error) {
-                showMessage('Failed to delete favorite', true);
+                showMessage('Failed to remove from favorites', true);
             }
         }
     </script>
