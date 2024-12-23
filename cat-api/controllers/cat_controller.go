@@ -26,6 +26,18 @@ type VoteRequest struct {
     Value   int    `json:"value"`
 }
 
+type FavoriteRequest struct {
+    ImageID string `json:"image_id"`
+    SubID   string `json:"sub_id"`
+}
+
+type Favorite struct {
+    ID        int      `json:"id"`
+    ImageID   string   `json:"image_id"`
+    SubID     string   `json:"sub_id"`
+    Image     CatImage `json:"image"`
+}
+
 // GetRandomCatImage fetches a random cat image from The Cat API and renders it on the page.
 func (c *CatController) GetRandomCatImage() {
 	apiKey := web.AppConfig.DefaultString("catapi.key", "")
@@ -139,6 +151,117 @@ func (c *CatController) VoteForImage() {
     c.ServeJSON()
 }
 
+
+// AddToFavorites handles adding an image to favorites
+func (c *CatController) AddToFavorites() {
+    apiKey := web.AppConfig.DefaultString("catapi.key", "")
+    
+    body, err := ioutil.ReadAll(c.Ctx.Request.Body)
+    if err != nil {
+        c.Data["json"] = map[string]interface{}{"error": "Failed to read request body"}
+        c.ServeJSON()
+        return
+    }
+
+    var favReq FavoriteRequest
+    if err := json.Unmarshal(body, &favReq); err != nil {
+        c.Data["json"] = map[string]interface{}{"error": "Invalid request data"}
+        c.ServeJSON()
+        return
+    }
+
+    favURL := "https://api.thecatapi.com/v1/favourites"
+    jsonData, err := json.Marshal(favReq)
+    if err != nil {
+        c.Data["json"] = map[string]interface{}{"error": "Failed to process request"}
+        c.ServeJSON()
+        return
+    }
+
+    client := &http.Client{}
+    req, err := http.NewRequest("POST", favURL, bytes.NewBuffer(jsonData))
+    if err != nil {
+        c.Data["json"] = map[string]interface{}{"error": "Failed to create request"}
+        c.ServeJSON()
+        return
+    }
+
+    req.Header.Set("x-api-key", apiKey)
+    req.Header.Set("Content-Type", "application/json")
+
+    resp, err := client.Do(req)
+    if err != nil {
+        c.Data["json"] = map[string]interface{}{"error": "Failed to add favorite"}
+        c.ServeJSON()
+        return
+    }
+    defer resp.Body.Close()
+
+    var result map[string]interface{}
+    json.NewDecoder(resp.Body).Decode(&result)
+    c.Data["json"] = result
+    c.ServeJSON()
+}
+
+// GetFavorites retrieves all favorited images
+func (c *CatController) GetFavorites() {
+    apiKey := web.AppConfig.DefaultString("catapi.key", "")
+    
+    client := &http.Client{}
+    req, err := http.NewRequest("GET", "https://api.thecatapi.com/v1/favourites", nil)
+    if err != nil {
+        c.Data["error"] = "Failed to create request"
+        c.TplName = "favorites.tpl"
+        return
+    }
+
+    req.Header.Set("x-api-key", apiKey)
+    
+    resp, err := client.Do(req)
+    if err != nil {
+        c.Data["error"] = "Failed to fetch favorites"
+        c.TplName = "favorites.tpl"
+        return
+    }
+    defer resp.Body.Close()
+
+    var favorites []Favorite
+    if err := json.NewDecoder(resp.Body).Decode(&favorites); err != nil {
+        c.Data["error"] = "Failed to parse favorites"
+        c.TplName = "favorites.tpl"
+        return
+    }
+
+    c.Data["Favorites"] = favorites
+    c.TplName = "favorites.tpl"
+}
+
+// DeleteFavorite removes a favorite image
+func (c *CatController) DeleteFavorite() {
+    apiKey := web.AppConfig.DefaultString("catapi.key", "")
+    favoriteID := c.Ctx.Input.Param(":id")
+    
+    client := &http.Client{}
+    req, err := http.NewRequest("DELETE", fmt.Sprintf("https://api.thecatapi.com/v1/favourites/%s", favoriteID), nil)
+    if err != nil {
+        c.Data["json"] = map[string]interface{}{"error": "Failed to create request"}
+        c.ServeJSON()
+        return
+    }
+
+    req.Header.Set("x-api-key", apiKey)
+    
+    resp, err := client.Do(req)
+    if err != nil {
+        c.Data["json"] = map[string]interface{}{"error": "Failed to delete favorite"}
+        c.ServeJSON()
+        return
+    }
+    defer resp.Body.Close()
+
+    c.Data["json"] = map[string]interface{}{"message": "Favorite deleted successfully"}
+    c.ServeJSON()
+}
 
 
 // BreedsController handles requests related to cat breeds.

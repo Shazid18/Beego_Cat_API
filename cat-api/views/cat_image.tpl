@@ -77,6 +77,32 @@
                     showMessage('Failed to submit vote', true);
                 }
             }
+
+            // Add this to the existing script section
+            async function addToFavorites() {
+                try {
+                    const imageId = '{{.CatImage.ID}}';
+                    const response = await fetch('/cats/favorites', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            image_id: imageId,
+                            sub_id: 'user-12345'
+                        })
+                    });
+
+                    const result = await response.json();
+                    if (result.error) {
+                        showMessage(result.error, true);
+                    } else {
+                        showMessage('Added to favorites successfully!');
+                    }
+                } catch (error) {
+                    showMessage('Failed to add to favorites', true);
+                }
+            }
         </script>
     {{else}}
         <p>No image available. Try reloading the page.</p>
