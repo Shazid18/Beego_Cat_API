@@ -98,6 +98,9 @@
                         showMessage(result.error, true);
                     } else {
                         showMessage('Added to favorites successfully!');
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 0);
                     }
                 } catch (error) {
                     showMessage('Failed to add to favorites', true);
