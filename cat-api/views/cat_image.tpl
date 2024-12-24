@@ -169,7 +169,7 @@
                     showMessage(`Vote recorded successfully!`);
                     setTimeout(() => {
                         window.location.reload();
-                    }, 1500);
+                    }, 10);
                 }
             } catch (error) {
                 showMessage('Failed to submit vote', true);
@@ -197,7 +197,7 @@
                     showMessage('Added to favorites!');
                     setTimeout(() => {
                         window.location.reload();
-                    }, 1500);
+                    }, 10);
                 }
             } catch (error) {
                 showMessage('Failed to add to favorites', true);
