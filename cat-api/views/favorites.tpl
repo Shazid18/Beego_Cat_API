@@ -63,8 +63,10 @@
         .favorites-wrapper {
             background: white;
             border-radius: 8px;
-            height: calc(100vh - 140px);
+            height: 700px; /* Fixed height for the image container */
+            width: 100%;  /* Full width of the page-container */
             overflow: hidden;
+            margin-bottom: 15px;
         }
         .favorites-container {
             height: 100%;
@@ -141,7 +143,7 @@
 <body>
     <div class="page-container">
         <nav class="nav-bar">
-            <a href="/cats/random" class="nav-item">
+            <a href="/" class="nav-item">
                 <i class="fas fa-up-down"></i>
                 Voting
             </a>

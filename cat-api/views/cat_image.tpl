@@ -97,7 +97,7 @@
 <body>
     <div class="page-container">
         <nav class="nav-bar">
-            <a href="/cats/random" class="nav-item active">
+            <a href="/" class="nav-item active">
                 <i class="fas fa-up-down"></i>
                 Voting
             </a>

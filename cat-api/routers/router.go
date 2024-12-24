@@ -6,8 +6,8 @@ import (
 )
 
 func init() {
-    beego.Router("/", &controllers.MainController{})
-	beego.Router("/cats/random", &controllers.CatController{}, "get:GetRandomCatImage")
+    // beego.Router("/", &controllers.MainController{})
+	beego.Router("/", &controllers.CatController{}, "get:GetRandomCatImage")
 	beego.Router("/cats/vote", &controllers.CatController{}, "post:VoteForImage")
 
 	beego.Router("/cats/favorites", &controllers.CatController{}, "post:AddToFavorites")

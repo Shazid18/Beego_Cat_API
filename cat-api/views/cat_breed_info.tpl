@@ -54,11 +54,6 @@
             background-color: white; /* Explicitly set the background to white */
             color:rgb(26, 25, 25);
         }
-        .content-wrapper {
-            background: white;
-            border-radius: 8px;
-            height: calc(100vh - 140px);
-        }
         .content-container {
             height: 100%;
             padding: 10px;
@@ -134,7 +129,7 @@
 <body>
     <div class="page-container">
         <nav class="nav-bar">
-            <a href="/cats/random" class="nav-item">
+            <a href="/" class="nav-item">
                 <i class="fas fa-up-down"></i>
                 Voting
             </a>
@@ -155,34 +150,32 @@
                 {{end}}
             </select>
         </div>
+  
+        <div class="content-container">
+            <div class="slideshow">
+                {{range .BreedInfo.ImageURLs}}
+                    <img src="{{.}}" alt="Cat Image">
+                {{end}}
+            </div>
 
-        <div class="content-wrapper">
-            <div class="content-container">
-                <div class="slideshow">
-                    {{range .BreedInfo.ImageURLs}}
-                        <img src="{{.}}" alt="Cat Image">
-                    {{end}}
-                </div>
+            <div class="dots">
+                {{range .BreedInfo.ImageURLs}}
+                    <span class="dot"></span>
+                {{end}}
+            </div>
 
-                <div class="dots">
-                    {{range .BreedInfo.ImageURLs}}
-                        <span class="dot"></span>
-                    {{end}}
-                </div>
+            <div class="info-section">
+                <span class="breed-name">{{.BreedInfo.Name}}</span>
+                <span class="breed-origin">({{.BreedInfo.Origin}})</span>
+                <span class="breed-id">{{.BreedInfo.ID}}</span>
+            </div>
 
-                <div class="info-section">
-                    <span class="breed-name">{{.BreedInfo.Name}}</span>
-                    <span class="breed-origin">({{.BreedInfo.Origin}})</span>
-                    <span class="breed-id">{{.BreedInfo.ID}}</span>
-                </div>
+            <div class="description">
+                {{.BreedInfo.Info}}
+            </div>
 
-                <div class="description">
-                    {{.BreedInfo.Info}}
-                </div>
-
-                <div class="wikipedia">
-                    <a href="{{.BreedInfo.Wikipedia}}" target="_blank">WIKIPEDIA</a>
-                </div>
+            <div class="wikipedia">
+                <a href="{{.BreedInfo.Wikipedia}}" target="_blank">WIKIPEDIA</a>
             </div>
         </div>
     </div>
