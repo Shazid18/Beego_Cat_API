@@ -24,17 +24,22 @@
         }
         .nav-item {
             text-decoration: none;
-            color: #666;
+            color: #6b7280;
             font-size: 14px;
+            font-weight: bold;
             display: flex;
+            flex-direction: column; /* Stack the icon and text vertically */
             gap: 8px;
             align-items: center;
         }
+        .nav-item i {
+            font-size: 24px; /* Increase icon size */
+        }
         .nav-item:hover {
-            color: #FF4081;
+            color: #f76842;
         }
         .nav-item.active {
-            color: #FF4081;
+            color: #f76842;
         }
         .image-wrapper {
             background: white;
@@ -50,23 +55,31 @@
         .cat-image {
             width: 100%;  /* Ensure the image fills the container width */
             height: 100%; /* Ensure the image fills the container height */
-            object-fit: contain; /* Ensures the image fits without cropping */
+            object-fit: cover; /* Ensures the image covers the container without distorting */
         }
         .button-container {
             display: flex;
             justify-content: space-between;
             padding: 10px 0;
         }
+        .button-container button {
+            margin-right: 18px; /* Adds a gap between buttons */
+        }
+        .button-container i {
+            font-size: 30px;
+        }
         .action-button {
             background: none;
             border: none;
-            color: #666;
+            color: #6b7280;
             cursor: pointer;
             font-size: 24px;
             padding: 5px;
+            transition: transform 0.2s ease-in-out; /* Smooth transition for the hover effect */
         }
         .action-button:hover {
-            color: #FF4081;
+            color: #f76842;
+            transform: scale(1.3); /* Increase the icon size on hover */
         }
         .message {
             position: fixed;
@@ -85,7 +98,7 @@
     <div class="page-container">
         <nav class="nav-bar">
             <a href="/cats/random" class="nav-item active">
-                <i class="fas fa-arrow-up-arrow-down"></i>
+                <i class="fas fa-up-down"></i>
                 Voting
             </a>
             <a href="/cats/breedinfo" class="nav-item">
@@ -93,7 +106,7 @@
                 Breeds
             </a>
             <a href="/cats/favorites" class="nav-item">
-                <i class="fas fa-heart"></i>
+                <i class="far fa-heart"></i>
                 Favs
             </a>
         </nav>

@@ -24,17 +24,22 @@
         }
         .nav-item {
             text-decoration: none;
-            color: #666;
+            color: #6b7280;
             font-size: 14px;
+            font-weight: bold;
             display: flex;
+            flex-direction: column; /* Stack the icon and text vertically */
             gap: 8px;
             align-items: center;
         }
+        .nav-item i {
+            font-size: 24px; /* Increase icon size */
+        }
         .nav-item:hover {
-            color: #FF4081;
+            color: #f76842;
         }
         .nav-item.active {
-            color: #FF4081;
+            color: #f76842;
         }
         .breed-select {
             width: 100%;
@@ -44,9 +49,10 @@
             width: 100%;
             padding: 10px;
             font-size: 14px;
-            border: 1px solid #eee;
+            border: 1px solid rgb(174, 179, 189);
             border-radius: 8px;
-            color: #666;
+            background-color: white; /* Explicitly set the background to white */
+            color:rgb(26, 25, 25);
         }
         .content-wrapper {
             background: white;
@@ -87,7 +93,7 @@
             transition: background-color 0.3s;
         }
         .dot.active {
-            background-color: #FF4081;
+            background-color: #6b7280;
         }
         .info-section {
             display: flex;
@@ -97,31 +103,31 @@
         }
         .breed-name {
             font-weight: bold;
-            color: #333;
+            color: #000000;
         }
         .breed-origin {
-            color: #666;
-            font-weight: 500;
+            color: #6b7280;
+            font-weight: bold;
         }
         .breed-id {
-            color: #999;
+            color: #6b7280;
             font-style: italic;
         }
         .description {
             margin-bottom: 20px;
             line-height: 1.6;
-            color: #666;
+            color: #6b7280;
         }
         .wikipedia {
             margin-top: 20px;
         }
         .wikipedia a {
-            color: #FF4081;
+            color: #f76842;
             text-decoration: none;
-            font-weight: 500;
+            font-weight: bold;
         }
         .wikipedia a:hover {
-            text-decoration: underline;
+            text-decoration: none;
         }
     </style>
 </head>
@@ -129,7 +135,7 @@
     <div class="page-container">
         <nav class="nav-bar">
             <a href="/cats/random" class="nav-item">
-                <i class="fas fa-arrow-up-arrow-down"></i>
+                <i class="fas fa-up-down"></i>
                 Voting
             </a>
             <a href="/cats/breedinfo" class="nav-item active">
@@ -137,7 +143,7 @@
                 Breeds
             </a>
             <a href="/cats/favorites" class="nav-item">
-                <i class="fas fa-heart"></i>
+                <i class="far fa-heart"></i>
                 Favs
             </a>
         </nav>

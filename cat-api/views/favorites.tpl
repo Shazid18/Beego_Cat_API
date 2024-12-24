@@ -24,22 +24,30 @@
         }
         .nav-item {
             text-decoration: none;
-            color: #666;
+            color: #6b7280;
             font-size: 14px;
+            font-weight: bold;
             display: flex;
+            flex-direction: column; /* Stack the icon and text vertically */
             gap: 8px;
             align-items: center;
         }
+        .nav-item i {
+            font-size: 24px; /* Increase icon size */
+        }
         .nav-item:hover {
-            color: #FF4081;
+            color: #f76842;
         }
         .nav-item.active {
-            color: #FF4081;
+            color: #f76842;
         }
         .view-controls {
             display: flex;
             gap: 15px;
             margin-bottom: 15px;
+        }
+        .view-controls i {
+            font-size: 21px; /* Increase icon size */
         }
         .view-btn {
             background: none;
@@ -50,7 +58,7 @@
             padding: 5px;
         }
         .view-btn.active {
-            color: #FF4081;
+            color: #f76842;
         }
         .favorites-wrapper {
             background: white;
@@ -134,7 +142,7 @@
     <div class="page-container">
         <nav class="nav-bar">
             <a href="/cats/random" class="nav-item">
-                <i class="fas fa-arrow-up-arrow-down"></i>
+                <i class="fas fa-up-down"></i>
                 Voting
             </a>
             <a href="/cats/breedinfo" class="nav-item">
@@ -142,7 +150,7 @@
                 Breeds
             </a>
             <a href="/cats/favorites" class="nav-item active">
-                <i class="fas fa-heart"></i>
+                <i class="far fa-heart"></i>
                 Favs
             </a>
         </nav>

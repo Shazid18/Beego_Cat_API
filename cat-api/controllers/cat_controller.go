@@ -378,7 +378,7 @@ func (c *CatController) GetBreedsAndBreedInfo() {
 
 	// Goroutine to fetch images for the selected breed
 	go func() {
-		apiURL = fmt.Sprintf("https://api.thecatapi.com/v1/images/search?breed_ids=%s&limit=5&api_key=%s", breedInfo.ID, apiKey)
+		apiURL = fmt.Sprintf("https://api.thecatapi.com/v1/images/search?breed_ids=%s&limit=8&api_key=%s", breedInfo.ID, apiKey)
 		req, err := http.NewRequest("GET", apiURL, nil)
 		if err != nil {
 			errorChannel <- err
