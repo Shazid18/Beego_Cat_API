@@ -13,7 +13,7 @@
             background-color: white;
         }
         .page-container {
-            max-width: 1200px;
+            max-width: 1000px;
             margin: 0 auto;
         }
         .nav-bar {
@@ -39,37 +39,18 @@
         .image-wrapper {
             background: white;
             border-radius: 8px;
-            height: calc(100vh - 100px);
+            height: 600px; /* Fixed height for the image container */
+            width: 100%;  /* Full width of the page-container */
             overflow: hidden;
-        }
-        .image-container {
-            height: 100%;
-            overflow-y: auto;
-            padding: 10px;
-        }
-        /* Custom scrollbar */
-        .image-container::-webkit-scrollbar {
-            width: 8px;
-        }
-        .image-container::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-        .image-container::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 4px;
-        }
-        .image-container::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
-        .cat-image-box {
-            position: relative;
-            width: 100%;
-            padding-bottom: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center; /* Center the image */
+            align-items: center; /* Vertically center the image */
         }
         .cat-image {
-            width: 100%;
-            height: auto;
-            display: block;
+            width: 100%;  /* Ensure the image fills the container width */
+            height: 100%; /* Ensure the image fills the container height */
+            object-fit: contain; /* Ensures the image fits without cropping */
         }
         .button-container {
             display: flex;
@@ -123,23 +104,19 @@
             <p style="color: red;">{{.error}}</p>
         {{else if .CatImage}}
             <div class="image-wrapper">
-                <div class="image-container">
-                    <div class="cat-image-box">
-                        <img src="{{.CatImage.URL}}" alt="Random Cat" class="cat-image" id="catImage">
-                        <div class="button-container">
-                            <button class="action-button" onclick="addToFavorites()">
-                                <i class="far fa-heart"></i>
-                            </button>
-                            <div>
-                                <button class="action-button" onclick="vote('{{.CatImage.ID}}', 1)">
-                                    <i class="far fa-thumbs-up"></i>
-                                </button>
-                                <button class="action-button" onclick="vote('{{.CatImage.ID}}', -1)">
-                                    <i class="far fa-thumbs-down"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                <img src="{{.CatImage.URL}}" alt="Random Cat" class="cat-image" id="catImage">
+            </div>
+            <div class="button-container">
+                <button class="action-button" onclick="addToFavorites()">
+                    <i class="far fa-heart"></i>
+                </button>
+                <div>
+                    <button class="action-button" onclick="vote('{{.CatImage.ID}}', 1)">
+                        <i class="far fa-thumbs-up"></i>
+                    </button>
+                    <button class="action-button" onclick="vote('{{.CatImage.ID}}', -1)">
+                        <i class="far fa-thumbs-down"></i>
+                    </button>
                 </div>
             </div>
         {{else}}

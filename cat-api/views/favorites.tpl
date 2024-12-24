@@ -13,7 +13,7 @@
             background-color: white;
         }
         .page-container {
-            max-width: 1200px;
+            max-width: 1000px;
             margin: 0 auto;
         }
         .nav-bar {
@@ -79,7 +79,7 @@
         }
         .grid-view {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 10px;
             padding-right: 10px;
         }

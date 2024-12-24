@@ -13,7 +13,7 @@
             background-color: white;
         }
         .page-container {
-            max-width: 1200px;
+            max-width: 1000px;
             margin: 0 auto;
         }
         .nav-bar {
@@ -52,35 +52,23 @@
             background: white;
             border-radius: 8px;
             height: calc(100vh - 140px);
-            overflow: hidden;
         }
         .content-container {
             height: 100%;
-            overflow-y: auto;
             padding: 10px;
-        }
-        /* Custom scrollbar */
-        .content-container::-webkit-scrollbar {
-            width: 8px;
-        }
-        .content-container::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-        .content-container::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 4px;
-        }
-        .content-container::-webkit-scrollbar-thumb:hover {
-            background: #555;
         }
         .slideshow {
             width: 100%;
             position: relative;
             margin-bottom: 20px;
+            display: flex;
+            justify-content: center; /* Center the image */
+            align-items: center;
         }
         .slideshow img {
-            width: 100%;
-            height: auto;
+            width: 700px; /* Set fixed width */
+            height: 300px; /* Set fixed height */
+            object-fit: contain; /* Ensure the image fits without cropping */
             display: none;
             border-radius: 8px;
         }
