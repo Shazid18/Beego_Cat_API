@@ -1,0 +1,49 @@
+# Ignore Go binary files
+/bin/
+/obj/
+
+# Ignore the Beego-generated configuration file
+/conf/app.conf
+
+# Ignore log files
+*.log
+
+# Ignore Go vendor directory
+/vendor/
+
+# Ignore build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.a
+*.out
+
+# Ignore IDE or editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.bak
+*.tmp
+
+# Ignore Go test output
+*.test
+
+# Ignore the directory where Go modules are cached
+.golangci.yml
+.gopm/
+
+# Ignore Go's coverage output
+*.coverprofile
+
+# Ignore Go build cache
+*.cache/
+
+# Ignore Beego session file
+sessions/
+
+# Ignore other OS-specific files
+.DS_Store
+Thumbs.db

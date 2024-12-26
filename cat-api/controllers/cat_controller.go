@@ -9,6 +9,8 @@ import (
 	"github.com/beego/beego/v2/server/web"
 )
 
+var apiBaseURL = web.AppConfig.DefaultString("catapi.url", "")
+
 // CatController handles requests related to cat images.
 type CatController struct {
 	web.Controller
@@ -52,7 +54,7 @@ type BreedInfo struct {
 }
 
 // Helper function to make HTTP requests concurrently
-func makeRequest(method, url string, headers map[string]string, body []byte) (responseBody []byte, err error) {
+func MakeRequest(method, url string, headers map[string]string, body []byte) (responseBody []byte, err error) {
 	client := &http.Client{}
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(body))
 	if err != nil {
@@ -81,7 +83,7 @@ func makeRequest(method, url string, headers map[string]string, body []byte) (re
 // GetRandomCatImage fetches a random cat image from The Cat API and renders it on the page.
 func (c *CatController) GetRandomCatImage() {
 	apiKey := web.AppConfig.DefaultString("catapi.key", "")
-	apiURL := "https://api.thecatapi.com/v1/images/search"
+	apiURL := apiBaseURL + "/images/search"
 
 	ch := make(chan CatImage, 1) // Channel for image result
 	errCh := make(chan error, 1) // Channel for errors
@@ -89,7 +91,7 @@ func (c *CatController) GetRandomCatImage() {
 	// Fetch the random cat image asynchronously
 	go func() {
 		headers := map[string]string{"x-api-key": apiKey}
-		respBody, err := makeRequest("GET", apiURL, headers, nil)
+		respBody, err := MakeRequest("GET", apiURL, headers, nil)
 		if err != nil {
 			errCh <- err
 			return
@@ -143,10 +145,10 @@ func (c *CatController) VoteForImage() {
 
     // Send vote data asynchronously
     go func() {
-        voteURL := "https://api.thecatapi.com/v1/votes"
+        voteURL := apiBaseURL + "/votes"
         jsonData, _ := json.Marshal(voteReq)
         headers := map[string]string{"x-api-key": apiKey, "Content-Type": "application/json"}
-        respBody, err := makeRequest("POST", voteURL, headers, jsonData)
+        respBody, err := MakeRequest("POST", voteURL, headers, jsonData)
         if err != nil {
             errCh <- err
             return
@@ -195,10 +197,10 @@ func (c *CatController) AddToFavorites() {
 
     // Add image to favorites asynchronously
     go func() {
-        favURL := "https://api.thecatapi.com/v1/favourites"
+        favURL := apiBaseURL + "/favourites"
         jsonData, _ := json.Marshal(favReq)
         headers := map[string]string{"x-api-key": apiKey, "Content-Type": "application/json"}
-        respBody, err := makeRequest("POST", favURL, headers, jsonData)
+        respBody, err := MakeRequest("POST", favURL, headers, jsonData)
         if err != nil {
             errCh <- err
             return
@@ -233,9 +235,9 @@ func (c *CatController) GetFavorites() {
 
     // Fetch favorites asynchronously
     go func() {
-        reqURL := "https://api.thecatapi.com/v1/favourites"
+        reqURL := apiBaseURL + "/favourites"
         headers := map[string]string{"x-api-key": apiKey}
-        respBody, err := makeRequest("GET", reqURL, headers, nil)
+        respBody, err := MakeRequest("GET", reqURL, headers, nil)
         if err != nil {
             errCh <- err
             return
@@ -272,9 +274,9 @@ func (c *CatController) DeleteFavorite() {
 
     // Remove favorite asynchronously
     go func() {
-        reqURL := fmt.Sprintf("https://api.thecatapi.com/v1/favourites/%s", favoriteID)
+        reqURL := fmt.Sprintf(apiBaseURL + "/favourites/%s", favoriteID)
         headers := map[string]string{"x-api-key": apiKey}
-        respBody, err := makeRequest("DELETE", reqURL, headers, nil)
+        respBody, err := MakeRequest("DELETE", reqURL, headers, nil)
         if err != nil {
             errCh <- err
             return
@@ -303,7 +305,7 @@ func (c *CatController) DeleteFavorite() {
 // GetBreedsAndBreedInfo fetches cat breeds and breed information concurrently.
 func (c *CatController) GetBreedsAndBreedInfo() {
 	apiKey := web.AppConfig.DefaultString("catapi.key", "")
-	apiURL := "https://api.thecatapi.com/v1/breeds"
+	apiURL := apiBaseURL + "/breeds"
 
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", apiURL, nil)
@@ -372,7 +374,7 @@ func (c *CatController) GetBreedsAndBreedInfo() {
 
 	// Fetch breed images asynchronously
 	go func() {
-		apiURL = fmt.Sprintf("https://api.thecatapi.com/v1/images/search?breed_ids=%s&limit=8&api_key=%s", breedInfo.ID, apiKey)
+		apiURL = fmt.Sprintf(apiBaseURL + "/images/search?breed_ids=%s&limit=8&api_key=%s", breedInfo.ID, apiKey)
 		req, err := http.NewRequest("GET", apiURL, nil)
 		if err != nil {
 			errorChannel <- err
