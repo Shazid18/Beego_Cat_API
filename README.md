@@ -51,6 +51,14 @@ This project is a web application that interacts with [TheCatAPI](https://thecat
 
 ## Getting Started
 
+### Prerequisites
+
+Before you begin, ensure you have the following installed on your system:
+
+- Go (version 1.16 or later)
+- Git
+- Beego
+
 
 ### Technology
 - **Backend**: Beego (Go framework)
@@ -60,25 +68,80 @@ This project is a web application that interacts with [TheCatAPI](https://thecat
 
 
 ### Installation
-  
+
+   1. Install Go
+
+      If you haven't installed Go, follow these steps:
+
+      1. Visit the official Go downloads page: https://golang.org/dl/
+
+      2. Download the appropriate installer for your operating system.
+
+      3. Follow the installation instructions for your OS:
+         - Windows: Run the MSI installer and follow the prompts.
+         - macOS: Open the package file and follow the prompts.
+         - Linux: Extract the archive to `/usr/local`:
+         ```bash
+         tar -C /usr/local -xzf go1.x.x.linux-amd64.tar.gz
+         ```
+      4. Add Go to your PATH:
+         - For bash, add the following to your `~/.bashrc` or `~/.bash_profile`:
+         ```
+         export PATH=$PATH:/usr/local/go/bin
+         export GOPATH=$HOME/go
+         export PATH=$PATH:$GOPATH/bin
+         ```
+         - For other shells, add the equivalent to your shell's configuration file.
+
+      5. Verify the installation by opening a new terminal and running:
+         ```
+         go version
+         ```
+  2. Install Beego
+
+      If you haven't installed Beego, follow these steps:
+
+      ```bash
+      go install github.com/beego/bee/v2@latest
+      ```
+      For Linux:
+      ```bash
+      echo "export PATH=\$PATH:\$(go env GOPATH)/bin" >> ~/.bashrc
+      source ~/.bashrc
+      ```
+      Verify the installation by opening a new terminal and running:
+
+      ```bash
+      bee version
+      ```
+      
+   3. make directory
+
+      ```bash
+      mkdir -p ~/go/src/        "Windows===> mkdir C:\Users\Your_User_Name\go\src\"
+
+      cd ~/go/src/              "Windows===> cd C:\Users\Your_User_Name\go\src\"
+      ```
+
+
   1. Clone the repository:
      ```bash
-     git clone https://github.com/Shazid18/beego-cat-api-viewer.git
+     git clone https://github.com/Shazid18/Beego_Cat_API.git
      ```
      ```bash
-     cd beego-cat-api-viewer
+     cd Beego_Cat_API.git
      ```
      ```bash
-     cd beego-cat-api
+     cd cat-api
      ```
   
   2. Install dependencies:
      ```bash
-     go get github.com/beego/bee/v2@latest
+     go mod tidy
      ```
      
   3. Configuration:
-    **API Key**: Set your API key for TheCatAPI in the conf/app.conf file.
+    **API Key**: Set your API key for TheCatAPI in the `conf/app.conf` file with the API key you obtained from The Cat API.
      ```bash
      CatAPIKey = "your-api-key-here"
      ```
