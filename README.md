@@ -6,6 +6,7 @@
   2. [Features](#features)
   3. [Project Structure](#project-structure)
   4. [Getting Started](#getting-started)
+     - [Prerequisites](#prerequisites)
      - [Technology](#technology)
      - [Installation](#installation)
   5. [Testing](#testing)
