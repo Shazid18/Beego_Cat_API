@@ -14,36 +14,41 @@ type CatController struct {
 	web.Controller
 }
 
+// CatImage represents a cat image with ID and URL.
 type CatImage struct {
 	ID  string `json:"id"`
 	URL string `json:"url"`
 }
 
+// VoteRequest contains the information required to vote on a cat image.
 type VoteRequest struct {
-    ImageID string `json:"image_id"`
-    SubID   string `json:"sub_id"`
-    Value   int    `json:"value"`
+	ImageID string `json:"image_id"`
+	SubID   string `json:"sub_id"`
+	Value   int    `json:"value"`
 }
 
+// FavoriteRequest contains the information required to add a cat image to favorites.
 type FavoriteRequest struct {
-    ImageID string `json:"image_id"`
-    SubID   string `json:"sub_id"`
+	ImageID string `json:"image_id"`
+	SubID   string `json:"sub_id"`
 }
 
+// Favorite represents a cat image in the favorites list.
 type Favorite struct {
-    ID        int      `json:"id"`
-    ImageID   string   `json:"image_id"`
-    SubID     string   `json:"sub_id"`
-    Image     CatImage `json:"image"`
+	ID        int      `json:"id"`
+	ImageID   string   `json:"image_id"`
+	SubID     string   `json:"sub_id"`
+	Image     CatImage `json:"image"`
 }
 
+// BreedInfo contains information about a specific cat breed.
 type BreedInfo struct {
-	ID		  	string `json:"id"`
-	Origin	  	string `json:"origin"`
-	Name        string `json:"name"`
-	Info        string `json:"description"`
-	Wikipedia   string `json:"wikipedia_url"`
-	ImageURLs   []string `json:"image_urls"`
+	ID         string   `json:"id"`
+	Origin     string   `json:"origin"`
+	Name       string   `json:"name"`
+	Info       string   `json:"description"`
+	Wikipedia  string   `json:"wikipedia_url"`
+	ImageURLs  []string `json:"image_urls"`
 }
 
 // Helper function to make HTTP requests concurrently
@@ -79,10 +84,10 @@ func (c *CatController) GetRandomCatImage() {
 	apiURL := "https://api.thecatapi.com/v1/images/search"
 
 	ch := make(chan CatImage, 1) // Channel for image result
-	errCh := make(chan error, 1)  // Channel for errors
+	errCh := make(chan error, 1) // Channel for errors
 
+	// Fetch the random cat image asynchronously
 	go func() {
-		// Prepare headers and make the request asynchronously
 		headers := map[string]string{"x-api-key": apiKey}
 		respBody, err := makeRequest("GET", apiURL, headers, nil)
 		if err != nil {
@@ -90,7 +95,6 @@ func (c *CatController) GetRandomCatImage() {
 			return
 		}
 
-		// Parse the response
 		var images []CatImage
 		if err := json.Unmarshal(respBody, &images); err != nil {
 			errCh <- err
@@ -104,10 +108,11 @@ func (c *CatController) GetRandomCatImage() {
 		}
 	}()
 
+	// Handle result or error
 	select {
-	case catImage := <-ch: // Successfully received cat image
+	case catImage := <-ch:
 		c.Data["CatImage"] = catImage
-	case err := <-errCh: // Error occurred
+	case err := <-errCh:
 		c.Data["error"] = fmt.Sprintf("Failed to fetch image: %v", err)
 	}
 
@@ -115,11 +120,10 @@ func (c *CatController) GetRandomCatImage() {
 	c.Render()
 }
 
-// New method to handle voting with Go channels
+// VoteForImage handles voting for a cat image.
 func (c *CatController) VoteForImage() {
     apiKey := web.AppConfig.DefaultString("catapi.key", "")
     
-    // Read the request body
     body, err := ioutil.ReadAll(c.Ctx.Request.Body)
     if err != nil {
         c.Data["json"] = map[string]interface{}{"error": "Failed to read request body"}
@@ -137,8 +141,8 @@ func (c *CatController) VoteForImage() {
     ch := make(chan map[string]interface{}, 1) // Channel for API response
     errCh := make(chan error, 1) // Channel for errors
 
+    // Send vote data asynchronously
     go func() {
-        // Prepare headers and make the request asynchronously
         voteURL := "https://api.thecatapi.com/v1/votes"
         jsonData, _ := json.Marshal(voteReq)
         headers := map[string]string{"x-api-key": apiKey, "Content-Type": "application/json"}
@@ -148,7 +152,6 @@ func (c *CatController) VoteForImage() {
             return
         }
 
-        // Parse the response
         var result map[string]interface{}
         if err := json.Unmarshal(respBody, &result); err != nil {
             errCh <- err
@@ -158,17 +161,18 @@ func (c *CatController) VoteForImage() {
         ch <- result
     }()
 
+    // Handle result or error
     select {
-    case result := <-ch: // Successfully received the result
+    case result := <-ch:
         c.Data["json"] = result
-    case err := <-errCh: // Error occurred
+    case err := <-errCh:
         c.Data["json"] = map[string]interface{}{"error": fmt.Sprintf("Failed to submit vote: %v", err)}
     }
 
     c.ServeJSON()
 }
 
-// AddToFavorites with Go channels
+// AddToFavorites handles adding a cat image to favorites.
 func (c *CatController) AddToFavorites() {
     apiKey := web.AppConfig.DefaultString("catapi.key", "")
     
@@ -189,8 +193,8 @@ func (c *CatController) AddToFavorites() {
     ch := make(chan map[string]interface{}, 1) // Channel for API response
     errCh := make(chan error, 1) // Channel for errors
 
+    // Add image to favorites asynchronously
     go func() {
-        // Prepare headers and make the request asynchronously
         favURL := "https://api.thecatapi.com/v1/favourites"
         jsonData, _ := json.Marshal(favReq)
         headers := map[string]string{"x-api-key": apiKey, "Content-Type": "application/json"}
@@ -200,7 +204,6 @@ func (c *CatController) AddToFavorites() {
             return
         }
 
-        // Parse the response
         var result map[string]interface{}
         if err := json.Unmarshal(respBody, &result); err != nil {
             errCh <- err
@@ -210,25 +213,26 @@ func (c *CatController) AddToFavorites() {
         ch <- result
     }()
 
+    // Handle result or error
     select {
-    case result := <-ch: // Successfully received the result
+    case result := <-ch:
         c.Data["json"] = result
-    case err := <-errCh: // Error occurred
+    case err := <-errCh:
         c.Data["json"] = map[string]interface{}{"error": fmt.Sprintf("Failed to add to favorites: %v", err)}
     }
 
     c.ServeJSON()
 }
 
-// GetFavorites with Go channels
+// GetFavorites fetches the list of favorite cat images.
 func (c *CatController) GetFavorites() {
     apiKey := web.AppConfig.DefaultString("catapi.key", "")
     
     ch := make(chan []Favorite, 1) // Channel for result
     errCh := make(chan error, 1)   // Channel for errors
 
+    // Fetch favorites asynchronously
     go func() {
-        // Prepare headers and make the request asynchronously
         reqURL := "https://api.thecatapi.com/v1/favourites"
         headers := map[string]string{"x-api-key": apiKey}
         respBody, err := makeRequest("GET", reqURL, headers, nil)
@@ -237,7 +241,6 @@ func (c *CatController) GetFavorites() {
             return
         }
 
-        // Parse the response
         var favorites []Favorite
         if err := json.Unmarshal(respBody, &favorites); err != nil {
             errCh <- err
@@ -247,10 +250,11 @@ func (c *CatController) GetFavorites() {
         ch <- favorites
     }()
 
+    // Handle result or error
     select {
-    case favorites := <-ch: // Successfully received favorites
+    case favorites := <-ch:
         c.Data["Favorites"] = favorites
-    case err := <-errCh: // Error occurred
+    case err := <-errCh:
         c.Data["error"] = fmt.Sprintf("Failed to fetch favorites: %v", err)
     }
 
@@ -258,7 +262,7 @@ func (c *CatController) GetFavorites() {
     c.Render()
 }
 
-// DeleteFavorite with Go channels
+// DeleteFavorite removes a cat image from the favorites list.
 func (c *CatController) DeleteFavorite() {
     apiKey := web.AppConfig.DefaultString("catapi.key", "")
     favoriteID := c.Ctx.Input.Param(":id")
@@ -266,8 +270,8 @@ func (c *CatController) DeleteFavorite() {
     ch := make(chan map[string]interface{}, 1) // Channel for API response
     errCh := make(chan error, 1) // Channel for errors
 
+    // Remove favorite asynchronously
     go func() {
-        // Prepare headers and make the request asynchronously
         reqURL := fmt.Sprintf("https://api.thecatapi.com/v1/favourites/%s", favoriteID)
         headers := map[string]string{"x-api-key": apiKey}
         respBody, err := makeRequest("DELETE", reqURL, headers, nil)
@@ -276,7 +280,6 @@ func (c *CatController) DeleteFavorite() {
             return
         }
 
-        // Parse the response
         var result map[string]interface{}
         if err := json.Unmarshal(respBody, &result); err != nil {
             errCh <- err
@@ -286,22 +289,18 @@ func (c *CatController) DeleteFavorite() {
         ch <- result
     }()
 
+    // Handle result or error
     select {
-    case result := <-ch: // Successfully deleted favorite
+    case result := <-ch:
         c.Data["json"] = map[string]interface{}{"message": "Favorite deleted successfully", "result": result}
-    case err := <-errCh: // Error occurred
+    case err := <-errCh:
         c.Data["json"] = map[string]interface{}{"error": fmt.Sprintf("Failed to delete favorite: %v", err)}
     }
 
     c.ServeJSON()
 }
 
-
-
-
-// BreedsController handles requests related to cat breeds.
-
-// GetBreedsAndBreedInfo fetches the list of available breeds and breed information concurrently.
+// GetBreedsAndBreedInfo fetches cat breeds and breed information concurrently.
 func (c *CatController) GetBreedsAndBreedInfo() {
 	apiKey := web.AppConfig.DefaultString("catapi.key", "")
 	apiURL := "https://api.thecatapi.com/v1/breeds"
@@ -316,12 +315,11 @@ func (c *CatController) GetBreedsAndBreedInfo() {
 	}
 	req.Header.Set("x-api-key", apiKey)
 
-	// Channels for receiving data from both API requests and handling errors.
 	breedsChannel := make(chan []map[string]interface{}, 1)
 	imagesChannel := make(chan []map[string]interface{}, 1)
-	errorChannel := make(chan error, 2) // A buffer for two potential errors
+	errorChannel := make(chan error, 2) 
 
-	// Goroutine for fetching breeds
+	// Fetch breed data asynchronously
 	go func() {
 		resp, err := client.Do(req)
 		if err != nil {
@@ -339,32 +337,28 @@ func (c *CatController) GetBreedsAndBreedInfo() {
 		breedsChannel <- breeds
 	}()
 
-	// Wait for the breeds response or error
+	// Handle breed response or error
 	var breeds []map[string]interface{}
 	select {
 	case breeds = <-breedsChannel:
-		// Successfully fetched breed data
 	case err := <-errorChannel:
-		// Error occurred fetching breed data
 		c.Data["error"] = fmt.Sprintf("Failed to fetch breeds: %v", err)
 		c.TplName = "cat_breeds.tpl"
 		c.Render()
 		return
 	}
 
-	// Extract breed names for dropdown
+	// Extract breed names and prepare breed info
 	var breedNames []string
 	for _, breed := range breeds {
 		breedNames = append(breedNames, breed["name"].(string))
 	}
 
-	// Default to the first breed if not specified
 	selectedBreed := c.GetString("breed")
 	if selectedBreed == "" && len(breeds) > 0 {
 		selectedBreed = breeds[0]["name"].(string)
 	}
 
-	// Prepare breed info for the selected breed
 	var breedInfo BreedInfo
 	for _, breed := range breeds {
 		if breed["name"].(string) == selectedBreed {
@@ -376,7 +370,7 @@ func (c *CatController) GetBreedsAndBreedInfo() {
 		}
 	}
 
-	// Goroutine to fetch images for the selected breed
+	// Fetch breed images asynchronously
 	go func() {
 		apiURL = fmt.Sprintf("https://api.thecatapi.com/v1/images/search?breed_ids=%s&limit=8&api_key=%s", breedInfo.ID, apiKey)
 		req, err := http.NewRequest("GET", apiURL, nil)
@@ -402,13 +396,11 @@ func (c *CatController) GetBreedsAndBreedInfo() {
 		imagesChannel <- images
 	}()
 
-	// Wait for the images response or error
+	// Handle image response or error
 	var images []map[string]interface{}
 	select {
 	case images = <-imagesChannel:
-		// Successfully fetched breed images
 	case err := <-errorChannel:
-		// Error occurred fetching breed images
 		c.Data["error"] = fmt.Sprintf("Failed to fetch breed images: %v", err)
 		c.TplName = "cat_breeds.tpl"
 		c.Render()
@@ -420,7 +412,7 @@ func (c *CatController) GetBreedsAndBreedInfo() {
 		breedInfo.ImageURLs = append(breedInfo.ImageURLs, img["url"].(string))
 	}
 
-	// Pass the breed data and images to the template
+	// Pass data to template
 	c.Data["BreedInfo"] = breedInfo
 	c.Data["Breeds"] = breedNames
 	c.Data["SelectedBreed"] = selectedBreed
