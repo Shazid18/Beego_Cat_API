@@ -29,21 +29,32 @@ This project is a web application that interacts with [TheCatAPI](https://thecat
 ## Project Structure
   
   ```plaintext
-    beego-cat-api-viewer/
-        ├── conf/
-        │   └── app.conf          
-        ├── controllers/
-        │   └── main.go           
-        ├── models/
-        │   └── cat.go           
-        ├── static/               
-        │   └── js/
-        │       └── app.js        
-        ├── tests/
-        │   └── main_test.go      
-        ├── views/
-        │   └── index.tpl         
-        └── main.go               
+    cat-api/
+      ├── conf/
+      │   └── app.conf
+      ├── controllers/
+      │   └── cat_controller.go
+      ├── routers/
+      │   └── router.go
+      ├── static/
+      │   ├── css/
+      │   │   ├── cat_breed_info.css
+      │   │   ├── cat_image.css
+      │   │   └── favorites.css
+      │   └── js/
+      │       ├── cat_breed_info.js
+      │       ├── cat_image.js
+      │       └── favorites.js
+      ├── tests/
+      │   └── default_test.go
+      ├── views/
+      │   ├── cat_breed_info.tpl
+      │   ├── cat_image.tpl
+      │   └── favorites.tpl
+      ├── go.mod
+      ├── go.sum
+      ├── main.go
+      └── README.md            
   ```
 
 
