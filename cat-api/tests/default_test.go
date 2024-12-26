@@ -10,6 +10,7 @@ import (
     "github.com/beego/beego/v2/core/logs"
 
 	_ "cat-api/routers"
+	_ "cat-api/controllers"
 
 	beego "github.com/beego/beego/v2/server/web"
 	. "github.com/smartystreets/goconvey/convey"
