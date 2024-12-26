@@ -68,6 +68,9 @@ This project is a web application that interacts with [TheCatAPI](https://thecat
      ```bash
      cd beego-cat-api-viewer
      ```
+     ```bash
+     cd beego-cat-api
+     ```
   
   2. Install dependencies:
      ```bash
